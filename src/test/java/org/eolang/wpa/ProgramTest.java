@@ -366,6 +366,44 @@ final class ProgramTest {
         );
     }
 
+    @Test
+    void doesNotDropSourcesShareSameRelativePath(@Mktmp final Path temp) throws IOException {
+        final Path first = temp.resolve("first");
+        final Path second = temp.resolve("second");
+        MatcherAssert.assertThat(
+            "All defects must be preserved for sources that share same relative path",
+            new Program(
+                new ListOf<>(
+                    this.withSource(
+                        first,
+                        "foo.xmir",
+                        String.join(
+                            System.lineSeparator(),
+                            "# This is foo.",
+                            "",
+                            "+alias missing.bar",
+                            "",
+                            "[] > foo"
+                        )
+                    ),
+                    this.withSource(
+                        second,
+                        "foo.xmir",
+                        String.join(
+                            System.lineSeparator(),
+                            "# This is another foo.",
+                            "",
+                            "+alias missing.boom",
+                            "",
+                            "[] > foo"
+                        )
+                    )
+                )
+            ).defects(),
+            Matchers.iterableWithSize(2)
+        );
+    }
+
     private Path withSource(final Path dir, final String name,
         final String text) throws IOException {
         final Path path = dir.resolve(name);
